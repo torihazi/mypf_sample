@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<!--
+  ===================================================================
+  ポートフォリオサイト（学習用サンプル）
+  - 架空の人物「佐藤 はるか」のポートフォリオです
+  - HTML / CSS / JavaScript だけで作っています（ライブラリなし）
+  - 自分用に使うときは、文章や名前を書き換えてください
+  ===================================================================
+-->
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <!-- スマホで正しい大きさに表示するためのおまじない（必須） -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>佐藤はるか | Frontend Developer Portfolio</title>
+  <meta name="description" content="フロントエンドエンジニア 佐藤はるかのポートフォリオサイト（学習用サンプル）。">
+
+  <!-- OGP：SNSでシェアされたときの表示設定。実運用では og:url / og:image を足す -->
+  <meta property="og:title" content="佐藤はるか | Frontend Developer Portfolio">
+  <meta property="og:description" content="フロントエンドエンジニアのポートフォリオサイト（学習用サンプル）。">
+  <meta property="og:type" content="website">
+
+  <!-- ファビコン（ブラウザのタブに出る小さなアイコン） -->
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+  <!-- スタイルシート（見た目の設定） -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!--
+    ▼ ちらつき防止用の小さなスクリプト
+    CSSが効く前にテーマ(light/dark)を確定させることで、
+    「一瞬ライトで表示されてからダークに切り替わる」ちらつきを防ぎます。
+    切替ボタンなどの本格的な処理は js/main.js にあります。
+  -->
+  <script>
+    (function () {
+      var saved = localStorage.getItem('theme');                       // 前回保存したテーマ
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; // OSの設定
+      var theme = saved || (prefersDark ? 'dark' : 'light');            // 保存値 > OS設定 の優先度
+      document.documentElement.setAttribute('data-theme', theme);       // <html data-theme="..."> を付与
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- ========================= ヘッダー（ナビゲーション） ========================= -->
+  <header class="site-header">
+    <div class="container header-inner">
+
+      <!-- ロゴ。クリックするとページ最上部に戻る -->
+      <a href="#top" class="logo">Haruka<span>.</span></a>
+
+      <!-- ナビメニュー。スマホではハンバーガーで開閉する -->
+      <nav class="nav" id="nav" aria-label="メインメニュー">
+        <ul class="nav-list">
+          <li><a href="#about"   class="nav-link">About</a></li>
+          <li><a href="#skills"  class="nav-link">Skills</a></li>
+          <li><a href="#works"   class="nav-link">Works</a></li>
+          <li><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <!-- ダークモード切替ボタン（中身のアイコンはJSが切り替える） -->
+        <button id="theme-toggle" class="icon-btn" type="button" aria-label="ダークモードに切り替える">
+          <span class="theme-icon">🌙</span>
+        </button>
+
+        <!-- ハンバーガーボタン（スマホ表示時のみ見える）。#nav を開閉する -->
+        <button id="menu-toggle" class="menu-btn" type="button"
+                aria-label="メニューを開く" aria-expanded="false" aria-controls="nav">
+          <span class="menu-bar"></span>
+          <span class="menu-bar"></span>
+          <span class="menu-bar"></span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ページ最上部の目印（ロゴの戻り先） -->
+  <span id="top"></span>
+
+  <main>
+
+    <!-- ============================== Hero（トップ） ============================== -->
+    <section class="hero">
+      <div class="container hero-inner">
+        <p class="hero-greeting" data-animate>こんにちは、私は</p>
+        <h1 class="hero-name"    data-animate>佐藤 はるか</h1>
+        <p class="hero-role"     data-animate>Frontend Developer</p>
+        <p class="hero-catch"    data-animate>「使う人がうれしくなる」Webを、ていねいに作ります。</p>
+        <div class="hero-actions" data-animate>
+          <a href="#works"   class="btn btn--primary">作品を見る</a>
+          <a href="#contact" class="btn btn--ghost">お問い合わせ</a>
+        </div>
+        <!-- スクロールを促す矢印（装飾なので読み上げ対象から外す） -->
+        <div class="scroll-cue" aria-hidden="true">▾</div>
+      </div>
+    </section>
+
+    <!-- ================================ About ================================ -->
+    <section class="section" id="about">
+      <div class="container">
+        <h2 class="section-title" data-animate>About</h2>
+        <div class="about-grid">
+          <!-- アバター。画像ファイルの代わりにCSSのグラデーション円で表現 -->
+          <div class="avatar" data-animate aria-hidden="true">HS</div>
+          <div class="about-text" data-animate>
+            <p>はじめまして、フロントエンドエンジニアの佐藤はるかです。</p>
+            <p>独学でWeb制作をはじめ、HTML・CSS・JavaScript を使って
+               「見やすく・触って楽しい」サイトづくりを目指しています。
+               小さな改善を積み重ねることと、コードを読みやすく保つことを大切にしています。</p>
+            <p>※このサイトは学習用のサンプルです。文章や実績はすべて架空のものです。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================ Skills ================================ -->
+    <section class="section section--alt" id="skills">
+      <div class="container">
+        <h2 class="section-title" data-animate>Skills</h2>
+        <p class="section-lead" data-animate>現在の習熟度の目安です。</p>
+
+        <!--
+          スキルバー：style="--w:90%" の数値が伸びる長さです。
+          画面に入ると JavaScript が is-visible クラスを付け、バーが伸びます。
+        -->
+        <ul class="skill-list">
+          <li class="skill" data-animate>
+            <div class="skill-head"><span>HTML / CSS</span><span>90%</span></div>
+            <div class="skill-bar"><span class="skill-fill" style="--w:90%"></span></div>
+          </li>
+          <li class="skill" data-animate>
+            <div class="skill-head"><span>JavaScript</span><span>75%</span></div>
+            <div class="skill-bar"><span class="skill-fill" style="--w:75%"></span></div>
+          </li>
+          <li class="skill" data-animate>
+            <div class="skill-head"><span>レスポンシブデザイン</span><span>80%</span></div>
+            <div class="skill-bar"><span class="skill-fill" style="--w:80%"></span></div>
+          </li>
+          <li class="skill" data-animate>
+            <div class="skill-head"><span>Git / GitHub</span><span>70%</span></div>
+            <div class="skill-bar"><span class="skill-fill" style="--w:70%"></span></div>
+          </li>
+          <li class="skill" data-animate>
+            <div class="skill-head"><span>UIデザイン（Figma）</span><span>60%</span></div>
+            <div class="skill-bar"><span class="skill-fill" style="--w:60%"></span></div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ================================ Works ================================ -->
+    <section class="section" id="works">
+      <div class="container">
+        <h2 class="section-title" data-animate>Works</h2>
+        <p class="section-lead" data-animate>これまでに制作した（架空の）作品です。</p>
+
+        <div class="works-grid">
+          <article class="work-card" data-animate>
+            <div class="work-thumb work-thumb--1" aria-hidden="true">EC</div>
+            <div class="work-body">
+              <h3 class="work-title">アパレルECサイト LP</h3>
+              <p class="work-desc">商品の魅力を伝えるランディングページ。スマホでの見やすさを重視。</p>
+              <ul class="tag-list"><li>HTML</li><li>CSS</li></ul>
+            </div>
+          </article>
+
+          <article class="work-card" data-animate>
+            <div class="work-thumb work-thumb--2" aria-hidden="true">TO</div>
+            <div class="work-body">
+              <h3 class="work-title">ToDo 管理アプリ</h3>
+              <p class="work-desc">タスクの追加・完了・削除ができるアプリ。データはブラウザに保存。</p>
+              <ul class="tag-list"><li>JavaScript</li><li>localStorage</li></ul>
+            </div>
+          </article>
+
+          <article class="work-card" data-animate>
+            <div class="work-thumb work-thumb--3" aria-hidden="true">WX</div>
+            <div class="work-body">
+              <h3 class="work-title">お天気アプリ</h3>
+              <p class="work-desc">地域を選ぶと天気を表示。APIからのデータ取得を練習した作品。</p>
+              <ul class="tag-list"><li>JavaScript</li><li>API</li></ul>
+            </div>
+          </article>
+
+          <article class="work-card" data-animate>
+            <div class="work-thumb work-thumb--4" aria-hidden="true">RE</div>
+            <div class="work-body">
+              <h3 class="work-title">レシピ紹介サイト</h3>
+              <p class="work-desc">料理レシピをカードで一覧表示。写真と文字のバランスを工夫。</p>
+              <ul class="tag-list"><li>HTML</li><li>CSS Grid</li></ul>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================ Contact ================================ -->
+    <section class="section section--alt" id="contact">
+      <div class="container contact-inner">
+        <h2 class="section-title" data-animate>Contact</h2>
+        <p class="section-lead" data-animate>お仕事のご相談・ご連絡はこちらからどうぞ。</p>
+        <a href="mailto:haruka@example.com" class="btn btn--primary" data-animate>メールを送る</a>
+
+        <!-- SNSリンク。実運用では href を自分のアカウントURLに差し替える -->
+        <ul class="social-list" data-animate>
+          <li><a href="#" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="#" target="_blank" rel="noopener">X (Twitter)</a></li>
+          <li><a href="#" target="_blank" rel="noopener">Zenn</a></li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================ フッター ================================ -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 Haruka Sato &mdash; これは学習用のサンプルポートフォリオです。</p>
+    </div>
+  </footer>
+
+  <!--
+    JavaScript の読み込み。
+    defer を付けると「HTMLを全部読み込んでから実行」されるので、
+    要素がまだ無くてエラー…という事故を防げます。
+  -->
+  <script src="js/main.js" defer></script>
+
+</body>
+</html>
