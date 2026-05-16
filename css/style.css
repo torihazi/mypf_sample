@@ -1,0 +1,482 @@
+/* =====================================================================
+   style.css ｜ ポートフォリオサイトの見た目をすべて定義するファイル
+   ---------------------------------------------------------------------
+   読みやすいように、上から「土台 → 部品 → セクション → スマホ対応」
+   の順に並べています。
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. テーマカラー（CSS変数）
+   --xxx という名前で色をまとめておくと、あとで変更が一括ででき便利です。
+   :root = ライトモード / [data-theme="dark"] = ダークモード
+   --------------------------------------------------------------------- */
+:root {
+  --bg:        #ffffff;   /* 背景色 */
+  --bg-alt:    #f4f5f7;   /* 1つおきのセクションの背景色 */
+  --surface:   #ffffff;   /* カードなどの面の色 */
+  --text:      #1f2933;   /* 基本の文字色 */
+  --text-weak: #6b7280;   /* 補足的な文字色（うすめ） */
+  --accent:    #4f7cff;   /* アクセント色（ボタンやリンク） */
+  --accent-2:  #8b5cf6;   /* グラデーション用のもう1色 */
+  --border:    #e2e5ea;   /* 線の色 */
+  --shadow:    0 8px 24px rgba(20, 30, 60, .10); /* 影 */
+
+  --header-h:  64px;       /* ヘッダーの高さ。あちこちで使うので変数化 */
+  --radius:    14px;       /* 角丸の大きさ */
+  --maxw:      1080px;     /* コンテンツの最大幅 */
+}
+
+/* ダークモード：上の色を上書きする */
+html[data-theme="dark"] {
+  --bg:        #14171c;
+  --bg-alt:    #1b1f26;
+  --surface:   #20252e;
+  --text:      #e8eaed;
+  --text-weak: #9aa3b2;
+  --accent:    #6f9bff;
+  --accent-2:  #a78bfa;
+  --border:    #2c323d;
+  --shadow:    0 8px 24px rgba(0, 0, 0, .45);
+}
+
+/* ---------------------------------------------------------------------
+   2. リセット & 土台
+   ブラウザごとの初期スタイルの差をならし、共通の基本設定をします。
+   --------------------------------------------------------------------- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;     /* ナビをクリックしたとき、なめらかに移動する */
+}
+
+body {
+  font-family: "Helvetica Neue", Arial,
+               "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.8;
+  /* 色が切り替わるとき、パッと変わらずスッと変わるようにする */
+  transition: background-color .3s ease, color .3s ease;
+}
+
+img { max-width: 100%; display: block; }
+a   { color: var(--accent); }
+ul  { list-style: none; }
+
+/* 中央寄せ＆左右に余白をつける共通の入れ物 */
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin-inline: auto;       /* 左右の余白を自動 = 中央寄せ */
+  padding-inline: 20px;
+}
+
+/* ---------------------------------------------------------------------
+   3. ヘッダー / ナビゲーション
+   --------------------------------------------------------------------- */
+.site-header {
+  position: sticky;          /* スクロールしても上に貼り付く */
+  top: 0;
+  z-index: 50;               /* 他の要素より前面に出す */
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);/* 背景をすりガラス風にぼかす */
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--text);
+}
+.logo span { color: var(--accent); }
+
+/* --- ナビメニュー（PC表示の初期状態） --- */
+.nav-list {
+  display: flex;
+  gap: 28px;
+}
+.nav-link {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  font-size: .95rem;
+  position: relative;
+  padding: 4px 0;
+}
+/* リンクの下にスッと出る下線（ホバー時） */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: 0;
+  width: 100%; height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);          /* ふだんは横幅0で見えない */
+  transform-origin: left;
+  transition: transform .25s ease;
+}
+.nav-link:hover::after { transform: scaleX(1); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 丸いアイコンボタン（ダークモード切替に使用） */
+.icon-btn {
+  width: 40px; height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  cursor: pointer;
+  font-size: 1.1rem;
+  display: grid;
+  place-items: center;       /* 中身を上下左右の中央に */
+  transition: transform .2s ease, border-color .2s ease;
+}
+.icon-btn:hover { transform: scale(1.08); border-color: var(--accent); }
+
+/* ハンバーガーボタン（PCでは非表示。スマホ用メディアクエリで表示する） */
+.menu-btn {
+  display: none;
+  width: 40px; height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+.menu-bar {
+  display: block;
+  width: 20px; height: 2px;
+  background: var(--text);
+  transition: transform .25s ease, opacity .25s ease;
+}
+
+/* ---------------------------------------------------------------------
+   4. ボタン（共通部品）
+   --------------------------------------------------------------------- */
+.btn {
+  display: inline-block;
+  padding: 12px 26px;
+  border-radius: 999px;        /* 完全な角丸（カプセル形） */
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.btn:hover { transform: translateY(-3px); }
+
+/* 塗りつぶしボタン */
+.btn--primary {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+/* 枠線だけのボタン */
+.btn--ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn--ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------------------------------------------------------------------
+   5. セクション共通
+   --------------------------------------------------------------------- */
+.section {
+  padding-block: clamp(56px, 9vw, 96px);  /* 画面幅に応じて上下余白を可変に */
+  scroll-margin-top: var(--header-h);      /* ナビ移動時に見出しが隠れないように */
+}
+.section--alt { background: var(--bg-alt); }
+
+.section-title {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  text-align: center;
+  margin-bottom: 8px;
+}
+/* 見出しの下の小さな飾り線 */
+.section-title::after {
+  content: "";
+  display: block;
+  width: 48px; height: 4px;
+  margin: 12px auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.section-lead {
+  text-align: center;
+  color: var(--text-weak);
+  margin-bottom: 40px;
+}
+
+/* ---------------------------------------------------------------------
+   6. Hero（トップの大きな見せ場）
+   --------------------------------------------------------------------- */
+.hero {
+  /* ヘッダー分を引いた高さで、画面いっぱいに表示 */
+  min-height: calc(100svh - var(--header-h));
+  display: grid;
+  place-items: center;
+  text-align: center;
+  /* ほんのり色づくグラデーション背景 */
+  background:
+    radial-gradient(60% 50% at 50% 0%,
+      color-mix(in srgb, var(--accent) 18%, transparent), transparent);
+}
+.hero-greeting { color: var(--text-weak); font-size: 1rem; }
+.hero-name {
+  font-size: clamp(2.4rem, 8vw, 4.2rem);
+  line-height: 1.2;
+  margin: 6px 0;
+}
+.hero-role {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 700;
+  /* 文字自体をグラデーションで塗る小ワザ */
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-catch { color: var(--text-weak); margin: 16px auto 28px; max-width: 460px; }
+.hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* スクロールを促す矢印（ふわふわ上下に動く） */
+.scroll-cue {
+  margin-top: 48px;
+  font-size: 1.4rem;
+  color: var(--text-weak);
+  animation: bounce 1.8s ease-in-out infinite;
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(8px); }
+}
+
+/* ---------------------------------------------------------------------
+   7. About
+   --------------------------------------------------------------------- */
+.about-grid {
+  display: grid;
+  gap: 32px;
+  justify-items: center;
+}
+/* アバター：画像の代わりにグラデーションの円＋イニシャル文字 */
+.avatar {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+}
+.about-text p + p { margin-top: 14px; }
+
+/* ---------------------------------------------------------------------
+   8. Skills（スキルバー）
+   --------------------------------------------------------------------- */
+.skill-list {
+  display: grid;
+  gap: 22px;
+  max-width: 620px;
+  margin-inline: auto;
+}
+.skill-head {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+/* バーの土台（うすい色） */
+.skill-bar {
+  height: 10px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+/* 実際に伸びる色つき部分。最初は幅0で、表示されたら --w まで伸びる */
+.skill-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 1s ease;
+}
+/* JavaScript が is-visible を付けたら、指定の幅まで伸びる */
+.skill.is-visible .skill-fill { width: var(--w); }
+
+/* ---------------------------------------------------------------------
+   9. Works（作品カード）
+   --------------------------------------------------------------------- */
+.works-grid {
+  display: grid;
+  /* 画面幅に応じて自動で列数が変わるグリッド */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+}
+.work-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.work-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+}
+/* サムネ画像の代わりのグラデーション帯。4種類で色を変える */
+.work-thumb {
+  height: 130px;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 1px;
+}
+.work-thumb--1 { background: linear-gradient(135deg, #4f7cff, #8b5cf6); }
+.work-thumb--2 { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+.work-thumb--3 { background: linear-gradient(135deg, #f59e0b, #ef4444); }
+.work-thumb--4 { background: linear-gradient(135deg, #10b981, #14b8a6); }
+
+.work-body { padding: 18px; }
+.work-title { font-size: 1.1rem; margin-bottom: 6px; }
+.work-desc { color: var(--text-weak); font-size: .92rem; }
+
+/* タグ（HTML / CSS などの小さなラベル） */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.tag-list li {
+  font-size: .75rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------
+   10. Contact
+   --------------------------------------------------------------------- */
+.contact-inner { text-align: center; }
+.social-list {
+  display: flex;
+  gap: 22px;
+  justify-content: center;
+  margin-top: 26px;
+  flex-wrap: wrap;
+}
+.social-list a {
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--text);
+}
+.social-list a:hover { color: var(--accent); }
+
+/* ---------------------------------------------------------------------
+   11. フッター
+   --------------------------------------------------------------------- */
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding-block: 28px;
+  text-align: center;
+  color: var(--text-weak);
+  font-size: .85rem;
+}
+
+/* ---------------------------------------------------------------------
+   12. スクロールアニメーション用のクラス
+   data-animate が付いた要素は、最初は少し下＆透明にしておき、
+   画面に入ったとき（JSが is-visible を付与）ふわっと表示する。
+   --------------------------------------------------------------------- */
+[data-animate] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+[data-animate].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------------------------------------------------------------------
+   13. スマホ・タブレット対応（画面幅 767px 以下）
+   ここまではPC基準。狭い画面のときだけ、この中身が上書きされます。
+   --------------------------------------------------------------------- */
+@media (max-width: 767px) {
+
+  /* ハンバーガーボタンを表示する */
+  .menu-btn { display: flex; }
+
+  /* ナビメニューを画面上から降りてくるパネルに変える */
+  .nav {
+    position: fixed;
+    top: var(--header-h);
+    left: 0; right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    /* ふだんは上に隠しておく（-120% = 完全に画面外） */
+    transform: translateY(-120%);
+    transition: transform .3s ease;
+  }
+  /* JSが nav--open を付けたら、降りてくる */
+  .nav.nav--open { transform: translateY(0); }
+
+  .nav-list {
+    flex-direction: column;
+    gap: 0;
+    padding: 8px 20px 16px;
+  }
+  .nav-link {
+    display: block;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ハンバーガー → ✕ への変形（メニューを開いているとき） */
+  .menu-btn[aria-expanded="true"] .menu-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .menu-btn[aria-expanded="true"] .menu-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .menu-btn[aria-expanded="true"] .menu-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   14. アニメーションを減らす設定
+   OSで「視差効果を減らす」を選んでいる人には、動きを控えめにする配慮。
+   --------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
