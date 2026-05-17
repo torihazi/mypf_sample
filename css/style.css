@@ -124,6 +124,10 @@ ul  { list-style: none; }
 }
 .nav-link:hover::after { transform: scaleX(1); }
 
+/* いま表示中の画面に対応するナビリンクは、下線を出したままにする */
+.nav-link[aria-current="page"] { color: var(--accent); }
+.nav-link[aria-current="page"]::after { transform: scaleX(1); }
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -226,8 +230,7 @@ ul  { list-style: none; }
    6. Hero（トップの大きな見せ場）
    --------------------------------------------------------------------- */
 .hero {
-  /* ヘッダー分を引いた高さで、画面いっぱいに表示 */
-  min-height: calc(100svh - var(--header-h));
+  /* 高さ（min-height）は .screen 側でまとめて指定している */
   display: grid;
   place-items: center;
   text-align: center;
@@ -253,18 +256,6 @@ ul  { list-style: none; }
 }
 .hero-catch { color: var(--text-weak); margin: 16px auto 28px; max-width: 460px; }
 .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-
-/* スクロールを促す矢印（ふわふわ上下に動く） */
-.scroll-cue {
-  margin-top: 48px;
-  font-size: 1.4rem;
-  color: var(--text-weak);
-  animation: bounce 1.8s ease-in-out infinite;
-}
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(8px); }
-}
 
 /* ---------------------------------------------------------------------
    7. About
@@ -466,10 +457,126 @@ ul  { list-style: none; }
   .menu-btn[aria-expanded="true"] .menu-bar:nth-child(3) {
     transform: translateY(-7px) rotate(-45deg);
   }
+
+  /* 左右の移動ボタンは、狭い画面では中央の文章と重ならないよう下に寄せる */
+  .side-btn {
+    top: auto;
+    bottom: 20px;
+    margin-top: 0;
+  }
 }
 
 /* ---------------------------------------------------------------------
-   14. アニメーションを減らす設定
+   14. 画面切り替え（SPA風の画面遷移）
+   各セクションに .screen を付け、表示中の1枚だけを見せる。
+   表示／非表示は js/main.js が hidden 属性で切り替え、その前後に
+   opacity をフェードさせて「ふわっと入れ替わる」演出にする。
+   --------------------------------------------------------------------- */
+.screen {
+  /* 1画面でタテを埋める。ヘッダーの高さぶんを引いた値を最低保証 */
+  min-height: calc(100svh - var(--header-h));
+  /* 切り替え時、透明度をなめらかに変化させる（フェード） */
+  transition: opacity .35s ease;
+}
+
+/* 表示していない画面は、場所も取らず完全に隠す。
+   .hero は display:grid を持つため、hidden 属性の標準の非表示
+   （display:none）に勝ってしまう。そこで .screen[hidden] で
+   display:none を明示し、確実に隠す。 */
+.screen[hidden] { display: none; }
+
+/* フェード用の一時クラス。退場直前・入場直前は透明にしておく */
+.screen.is-leaving,
+.screen.is-entering { opacity: 0; }
+
+/* --- 左右のセクション移動ボタン（前へ／次へ） --- */
+.side-btn {
+  position: fixed;
+  top: 50%;
+  margin-top: -24px;           /* ボタンの高さ48pxの半分。上下中央に置く */
+  z-index: 40;                 /* セクションより前面・ヘッダー(50)より背面 */
+  width: 48px; height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(6px);  /* 背景をすりガラス風にぼかす */
+  color: var(--text);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+  transition: transform .2s ease, border-color .2s ease, opacity .25s ease;
+}
+.side-btn:hover { transform: scale(1.12); border-color: var(--accent); }
+.side-btn--prev { left: 16px; }
+.side-btn--next { right: 16px; }
+/* 先頭／末尾の画面では、押せないボタンをそっと隠す（JSが disabled を付ける） */
+.side-btn:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------
+   15. ローディング画面（初期表示）
+   ページを開いた直後に loading... を画面いっぱいに表示する。
+   少し待つと js/main.js が is-done を付け、フェードして消える。
+   --------------------------------------------------------------------- */
+.loading {
+  position: fixed;
+  inset: 0;                    /* 上下左右ぴったり、画面全体を覆う */
+  z-index: 100;                /* ヘッダーや移動ボタンより前面に */
+  display: grid;
+  place-items: center;
+  background: var(--bg);       /* テーマ（ライト/ダーク）に追従する */
+  transition: opacity .5s ease;
+}
+/* JSが is-done を付けたらフェードアウト。透明な間はクリックを通す */
+.loading.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-box {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+/* ロゴ文字。文字をグラデーションで塗り、ふわっと明滅させる */
+.loading-logo {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: loading-pulse 1.4s ease-in-out infinite;
+}
+.loading-text {
+  color: var(--text-weak);
+  font-size: .95rem;
+  letter-spacing: 1px;
+}
+/* 「loading」の後ろの点。. → .. → ... と増えていく */
+.loading-dots::after {
+  content: "...";
+  animation: loading-dots 1.4s infinite;
+}
+@keyframes loading-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .4; }
+}
+@keyframes loading-dots {
+  0%   { content: ""; }
+  25%  { content: "."; }
+  50%  { content: ".."; }
+  75%  { content: "..."; }
+  100% { content: ""; }
+}
+
+/* ---------------------------------------------------------------------
+   16. アニメーションを減らす設定
    OSで「視差効果を減らす」を選んでいる人には、動きを控えめにする配慮。
    --------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {

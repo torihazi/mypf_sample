@@ -137,12 +137,191 @@
 
 
   /* -------------------------------------------------------------------
-     3つの機能をまとめて実行
+     機能4：画面遷移（SPA風の画面切り替え）
+     ・5つのセクション（.screen）のうち、1枚だけを表示する
+     ・#リンク を押すと URL の # が変わる。それを合図に、いまの画面を
+       フェードアウト → 次の画面をフェードイン する
+     ・最初の表示は、開いたときの URL の # に合わせてすぐ決める
+     ------------------------------------------------------------------- */
+  function setupScreenRouter() {
+    var screens  = document.querySelectorAll(".screen");
+    var navLinks = document.querySelectorAll(".nav-link");
+    var prevBtn  = document.getElementById("prev-screen"); // 左の「前へ」ボタン
+    var nextBtn  = document.getElementById("next-screen"); // 右の「次へ」ボタン
+    if (screens.length === 0) return; // 画面が無ければ何もしない（安全対策）
+
+    var FADE_MS = 350;       // フェードの長さ。CSS .screen の transition と同じ
+    var isAnimating = false; // いま切り替え中かどうか（連打よけ）
+
+    // URL の # から「表示すべき画面のid」を求める。
+    // 該当する .screen が無ければ、先頭の画面（hero）に戻す。
+    function resolveTargetId() {
+      var id = location.hash.replace("#", "");          // "#about" → "about"
+      var el = id ? document.getElementById(id) : null;
+      if (el && el.classList.contains("screen")) return id;
+      return screens[0].id;                             // フォールバック = "hero"
+    }
+
+    // 画面の中の data-animate 要素を、その場で表示状態にする。
+    // 機能2（スクロール監視）とは別に、画面が出た瞬間に確実に動かすため。
+    function revealAnimations(screenEl) {
+      if (!screenEl) return;
+      screenEl.querySelectorAll("[data-animate]").forEach(function (el) {
+        el.classList.add("is-visible");
+      });
+    }
+
+    // ナビの「現在地」表示を更新する。
+    // 表示中の画面に対応するリンクへ aria-current="page" を付ける。
+    function updateNav(activeId) {
+      navLinks.forEach(function (link) {
+        var linkId = link.getAttribute("href").replace("#", "");
+        if (linkId === activeId) {
+          link.setAttribute("aria-current", "page");
+        } else {
+          link.removeAttribute("aria-current");
+        }
+      });
+    }
+
+    // 画面の並び順（hero→about→…→contact）の中で、id が何番目かを返す。
+    function indexOfScreen(id) {
+      var index = -1;
+      screens.forEach(function (s, i) { if (s.id === id) index = i; });
+      return index;
+    }
+
+    // 左右の移動ボタンの有効／無効を切り替える。
+    // 先頭の画面では「前へ」、末尾の画面では「次へ」を押せないようにする。
+    function updateSideButtons(activeId) {
+      if (!prevBtn || !nextBtn) return;
+      var index = indexOfScreen(activeId);
+      prevBtn.disabled = (index <= 0);
+      nextBtn.disabled = (index >= screens.length - 1);
+    }
+
+    // フェード（opacity の transition）が終わるのを待つ。
+    // transitionend を待つのが基本だが、「視差効果を減らす」設定などで
+    // イベントが来ないこともあるので、setTimeout を保険に併用する。
+    // どちらか早く来た方で、処理を1回だけ実行する。
+    function onFadeDone(el, callback) {
+      var finished = false;
+      function finish() {
+        if (finished) return;            // 2回目以降は無視
+        finished = true;
+        el.removeEventListener("transitionend", finish);
+        callback();
+      }
+      el.addEventListener("transitionend", finish);
+      setTimeout(finish, FADE_MS + 100); // CSS の長さより必ず少し長くする
+    }
+
+    // 指定した画面を「フェードなしで即座に」表示する（初回表示用）。
+    function showInstant(targetId) {
+      screens.forEach(function (s) {
+        s.hidden = (s.id !== targetId);  // 対象だけ表示、ほかは隠す
+        s.classList.remove("is-leaving", "is-entering");
+      });
+      updateNav(targetId);
+      updateSideButtons(targetId);
+      revealAnimations(document.getElementById(targetId));
+    }
+
+    // 指定した画面へ、フェードしながら切り替える。
+    function transitionTo(targetId) {
+      // いま表示中（hidden でない）の画面を探す
+      var current = null;
+      screens.forEach(function (s) { if (!s.hidden) current = s; });
+
+      if (!current || current.id === targetId) return; // 同じ画面なら何もしない
+      if (isAnimating) return;                          // 切り替え中なら無視
+      isAnimating = true;
+
+      var next = document.getElementById(targetId);
+
+      // 1) いまの画面を透明にする（フェードアウト開始）
+      current.classList.add("is-leaving");
+
+      // 2) フェードアウトの完了を待ってから、中身を入れ替える
+      onFadeDone(current, function () {
+        current.hidden = true;
+        current.classList.remove("is-leaving");
+
+        // 3) 次の画面を「透明のまま」表示する
+        next.classList.add("is-entering");
+        next.hidden = false;
+
+        // 4) 1フレーム置いてから透明を解除する（→ フェードインが始まる）。
+        //    requestAnimationFrame を2回使うのは、1回だとブラウザが
+        //    「表示」と「透明解除」をまとめてしまい、変化と見なされず
+        //    アニメーションが起きないことがあるため。
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            next.classList.remove("is-entering");
+          });
+        });
+
+        updateNav(targetId);
+        updateSideButtons(targetId);
+        revealAnimations(next);
+        window.scrollTo(0, 0);  // 前の画面でスクロールしていても先頭に戻す
+        isAnimating = false;
+      });
+    }
+
+    // 左右の移動ボタン：いま表示中の画面を基準に、1つ前／1つ後の画面へ。
+    // location.hash を書き換えると hashchange が起き、下の流れで切り替わる。
+    function goByStep(step) {
+      var current = null;
+      screens.forEach(function (s) { if (!s.hidden) current = s; });
+      if (!current) return;
+      var target = indexOfScreen(current.id) + step;
+      if (target < 0 || target >= screens.length) return; // 端なら何もしない
+      location.hash = "#" + screens[target].id;
+    }
+    if (prevBtn) prevBtn.addEventListener("click", function () { goByStep(-1); });
+    if (nextBtn) nextBtn.addEventListener("click", function () { goByStep(1); });
+
+    // URL の # が変わったら、それを合図に画面を切り替える。
+    // ナビ・Heroのボタン・ロゴ・矢印・左右ボタンはすべて #リンク（または
+    // # を書き換える）なので、ここ1か所で受け止めれば個別処理は要りません。
+    window.addEventListener("hashchange", function () {
+      transitionTo(resolveTargetId());
+    });
+
+    // 初回表示：開いたときの URL の # に合わせて画面を決める
+    showInstant(resolveTargetId());
+  }
+
+
+  /* -------------------------------------------------------------------
+     機能5：ローディング画面（初期表示）
+     ・開いた直後の loading... 表示を、少し見せてからフェードして消す
+     ・静的サイトはすぐ読み込みが終わるので、わざと最低表示時間を設ける
+     ------------------------------------------------------------------- */
+  function setupLoading() {
+    var loader = document.getElementById("loading");
+    if (!loader) return; // ローディング要素が無ければ何もしない（安全対策）
+
+    var MIN_VISIBLE_MS = 1400; // この時間は必ず loading... を見せる
+
+    setTimeout(function () {
+      loader.classList.add("is-done");                 // フェードアウト開始
+      // フェード（CSSの .5s）が終わったころ、DOMから取り除いて後片付け
+      setTimeout(function () { loader.remove(); }, 600);
+    }, MIN_VISIBLE_MS);
+  }
+
+
+  /* -------------------------------------------------------------------
+     5つの機能をまとめて実行
      index.html で <script defer> を使っているため、
      ここに来た時点でHTMLは読み込み済み = 要素を安全に操作できます。
      ------------------------------------------------------------------- */
   setupThemeToggle();
   setupScrollAnimation();
   setupMobileMenu();
+  setupScreenRouter();
+  setupLoading();
 
 })();
