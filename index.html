@@ -45,12 +45,24 @@
 
 <body>
 
+  <!--
+    初期表示のローディング画面。
+    ページを開いた直後に loading... を表示し、js/main.js が少し待ってから
+    フェードして消します（その後DOMからも取り除かれます）。
+  -->
+  <div id="loading" class="loading">
+    <div class="loading-box">
+      <span class="loading-logo">Haruka.</span>
+      <span class="loading-text">loading<span class="loading-dots" aria-hidden="true"></span></span>
+    </div>
+  </div>
+
   <!-- ========================= ヘッダー（ナビゲーション） ========================= -->
   <header class="site-header">
     <div class="container header-inner">
 
-      <!-- ロゴ。クリックするとページ最上部に戻る -->
-      <a href="#top" class="logo">Haruka<span>.</span></a>
+      <!-- ロゴ。クリックするとトップ（Hero）画面に戻る -->
+      <a href="#hero" class="logo">Haruka<span>.</span></a>
 
       <!-- ナビメニュー。スマホではハンバーガーで開閉する -->
       <nav class="nav" id="nav" aria-label="メインメニュー">
@@ -80,13 +92,10 @@
     </div>
   </header>
 
-  <!-- ページ最上部の目印（ロゴの戻り先） -->
-  <span id="top"></span>
-
   <main>
 
     <!-- ============================== Hero（トップ） ============================== -->
-    <section class="hero">
+    <section class="hero screen" id="hero">
       <div class="container hero-inner">
         <p class="hero-greeting" data-animate>こんにちは、私は</p>
         <h1 class="hero-name"    data-animate>佐藤 はるか</h1>
@@ -96,13 +105,12 @@
           <a href="#works"   class="btn btn--primary">作品を見る</a>
           <a href="#contact" class="btn btn--ghost">お問い合わせ</a>
         </div>
-        <!-- スクロールを促す矢印（装飾なので読み上げ対象から外す） -->
-        <div class="scroll-cue" aria-hidden="true">▾</div>
       </div>
     </section>
 
     <!-- ================================ About ================================ -->
-    <section class="section" id="about">
+    <!-- screen クラス＝画面切り替えの対象。hidden で初期は非表示（Heroだけ表示） -->
+    <section class="section screen" id="about" hidden>
       <div class="container">
         <h2 class="section-title" data-animate>About</h2>
         <div class="about-grid">
@@ -120,7 +128,7 @@
     </section>
 
     <!-- ================================ Skills ================================ -->
-    <section class="section section--alt" id="skills">
+    <section class="section section--alt screen" id="skills" hidden>
       <div class="container">
         <h2 class="section-title" data-animate>Skills</h2>
         <p class="section-lead" data-animate>現在の習熟度の目安です。</p>
@@ -155,7 +163,7 @@
     </section>
 
     <!-- ================================ Works ================================ -->
-    <section class="section" id="works">
+    <section class="section screen" id="works" hidden>
       <div class="container">
         <h2 class="section-title" data-animate>Works</h2>
         <p class="section-lead" data-animate>これまでに制作した（架空の）作品です。</p>
@@ -201,17 +209,18 @@
     </section>
 
     <!-- ================================ Contact ================================ -->
-    <section class="section section--alt" id="contact">
+    <section class="section section--alt screen" id="contact" hidden>
       <div class="container contact-inner">
         <h2 class="section-title" data-animate>Contact</h2>
         <p class="section-lead" data-animate>お仕事のご相談・ご連絡はこちらからどうぞ。</p>
         <a href="mailto:haruka@example.com" class="btn btn--primary" data-animate>メールを送る</a>
 
-        <!-- SNSリンク。実運用では href を自分のアカウントURLに差し替える -->
+        <!-- SNSリンク。実運用では href を自分のアカウントURLに差し替える
+             （いまはダミー。#contact にしておき、押しても画面が動かないようにしている） -->
         <ul class="social-list" data-animate>
-          <li><a href="#" target="_blank" rel="noopener">GitHub</a></li>
-          <li><a href="#" target="_blank" rel="noopener">X (Twitter)</a></li>
-          <li><a href="#" target="_blank" rel="noopener">Zenn</a></li>
+          <li><a href="#contact" target="_blank" rel="noopener">GitHub</a></li>
+          <li><a href="#contact" target="_blank" rel="noopener">X (Twitter)</a></li>
+          <li><a href="#contact" target="_blank" rel="noopener">Zenn</a></li>
         </ul>
       </div>
     </section>
@@ -224,6 +233,17 @@
       <p>&copy; 2026 Haruka Sato &mdash; これは学習用のサンプルポートフォリオです。</p>
     </div>
   </footer>
+
+  <!--
+    左右のセクション移動ボタン（画面の端に固定表示）。
+    押すと前／次のセクションへ。先頭・末尾の画面では JS が押せなくする。
+  -->
+  <nav class="side-nav" aria-label="セクション移動">
+    <button id="prev-screen" class="side-btn side-btn--prev" type="button"
+            aria-label="前のセクションへ">❮</button>
+    <button id="next-screen" class="side-btn side-btn--next" type="button"
+            aria-label="次のセクションへ">❯</button>
+  </nav>
 
   <!--
     JavaScript の読み込み。
