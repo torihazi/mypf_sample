@@ -1,0 +1,7 @@
+# Python（スライド生成スクリプト用）
+.venv/
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
